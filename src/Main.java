@@ -2,20 +2,17 @@
 // username: RecipeBot_botbot    nome: RecipeBot
 
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class Main {
-
     public static void main(String[] args) {
+        String botToken = "8046367516:AAFZi_yHto9CaWvCaiavQ2JrEug367EbKbs";
 
-            TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication();
-            // Registra il bot
-            try {
-                botsApplication.registerBot("8046367516:AAFZi_yHto9CaWvCaiavQ2JrEug367EbKbs", new RecipeBot());
-            } catch (TelegramApiException e) {
-                throw new RuntimeException(e);
-            }
-            System.out.println("Bot Telegram avviato con successo!");
-
+        try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+            botsApplication.registerBot(botToken, new RecipeBot(botToken));
+            System.out.println("RecipeBot è attivo e in esecuzione!");
+            Thread.currentThread().join(); // Mantiene l'applicazione in esecuzione
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

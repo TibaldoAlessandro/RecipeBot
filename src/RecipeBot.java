@@ -1,7 +1,6 @@
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -14,30 +13,21 @@ import java.util.List;
 
 public class RecipeBot implements LongPollingSingleThreadUpdateConsumer {
 
-    private TelegramClient telegramClient = new OkHttpTelegramClient("8046367516:AAFZi_yHto9CaWvCaiavQ2JrEug367EbKbs");
+    private final TelegramClient telegramClient;
+
+    public RecipeBot(String botToken) {
+        this.telegramClient = new OkHttpTelegramClient(botToken);
+    }
 
     // Metodo per inviare il menu principale con bottoni di categorie
     private void sendCategoryMenu(long chatId) {
-        SendMessage message = new SendMessage(chatId+"", "");
-        message.setChatId(String.valueOf(chatId));
-        message.setText("Seleziona una categoria:");
-
-        //rows.add(createButtonRow("Primi", "primi"));
-        //rows.add(createButtonRow("Secondi", "secondi"));
-        //rows.add(createButtonRow("Dolci", "dolci"));
-
-
-        message.setReplyMarkup(InlineKeyboardMarkup
-                .builder()
-                .keyboardRow(
-                        new InlineKeyboardRow(InlineKeyboardButton
-                                .builder()
-                                .text("Antipasti")
-                                .callbackData("antipasti")
-                                .build()
-                        )
-                )
-                .build());
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Benvenuto su RecipeBot!\n" +
+                        "Scegli pure che tipologia di piatti vuoi cucinare e io ti aiuterò dandoti tutti gli ingredienti e i passaggi necessari.\n" +
+                        "Diventerai uno chef stellare!")
+                .replyMarkup(createCategoryButtons()) // Imposta i bottoni interattivi
+                .build();
 
         try {
             telegramClient.execute(message);
@@ -46,25 +36,41 @@ public class RecipeBot implements LongPollingSingleThreadUpdateConsumer {
         }
     }
 
+    // Metodo per creare i bottoni interattivi
+    private InlineKeyboardMarkup createCategoryButtons() {
+        List<InlineKeyboardRow> rows = new ArrayList<>();
+
+        // Aggiungi i bottoni in righe
+        rows.add(createButtonRow("Antipasti", "antipasti"));
+        rows.add(createButtonRow("Primi", "primi"));
+        rows.add(createButtonRow("Secondi", "secondi"));
+        rows.add(createButtonRow("Dolci", "dolci"));
+
+        return InlineKeyboardMarkup.builder()
+                .keyboard(rows)
+                .build();
+    }
+
     // Metodo per creare una riga di bottoni
-    private List<InlineKeyboardButton> createButtonRow(String text, String callbackData) {
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton button = new InlineKeyboardButton();
-        button.setText(text);
-        button.setCallbackData(callbackData);
+    private InlineKeyboardRow createButtonRow(String text, String callbackData) {
+        InlineKeyboardRow row = new InlineKeyboardRow();
+        InlineKeyboardButton button = InlineKeyboardButton.builder()
+                .text(text)
+                .callbackData(callbackData)
+                .build();
         row.add(button);
         return row;
     }
 
     // Metodo per inviare la lista di piatti di una categoria
-    private void sendDishList(long chatId, int messageId, String category) {
+    private void sendDishList(long chatId, String category) {
         String dishes = getDishList(category); // Ottiene i piatti per la categoria (dummy data)
 
-        EditMessageText message = new EditMessageText();
-        message.setChatId(String.valueOf(chatId));
-        message.setMessageId(messageId);
-        message.setText("Ecco i 10 piatti della categoria " + category + ":\n" + dishes +
-                "\n\nDigita /nome_piatto per selezionare un piatto.");
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Ecco i 10 piatti della categoria " + category + ":\n" + dishes +
+                        "\n\nDigita /nome_piatto per selezionare un piatto.")
+                .build();
 
         try {
             telegramClient.execute(message);
@@ -73,7 +79,7 @@ public class RecipeBot implements LongPollingSingleThreadUpdateConsumer {
         }
     }
 
-    // Metodo per simulare la lista di piatti per ogni categoria (puoi sostituirlo con i dati veri)
+    // Metodo per simulare la lista di piatti per ogni categoria
     private String getDishList(String category) {
         StringBuilder result = new StringBuilder();
         switch (category) {
@@ -95,9 +101,11 @@ public class RecipeBot implements LongPollingSingleThreadUpdateConsumer {
 
     // Metodo per inviare un messaggio semplice
     private void sendMessage(long chatId, String text) {
-        SendMessage message = new SendMessage(chatId+"", text);
-        message.setChatId(String.valueOf(chatId));
-        message.setText(text);
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text(text)
+                .build();
+
         try {
             telegramClient.execute(message);
         } catch (TelegramApiException e) {
@@ -114,10 +122,6 @@ public class RecipeBot implements LongPollingSingleThreadUpdateConsumer {
 
             if (messageText.equals("/start")) {
                 sendCategoryMenu(chatId); // Mostra i bottoni delle categorie
-            } else if (messageText.startsWith("/")) {
-                // Gestisce la selezione del piatto tramite comando
-                String dishName = messageText.substring(1); // Rimuove "/"
-                sendDishList(chatId, dishName);
             } else {
                 sendMessage(chatId, "Comando non riconosciuto. Usa /start per iniziare.");
             }
@@ -125,12 +129,11 @@ public class RecipeBot implements LongPollingSingleThreadUpdateConsumer {
             // Gestione della callback dei bottoni
             String callbackData = update.getCallbackQuery().getData();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
-            int messageId = update.getCallbackQuery().getMessage().getMessageId();
 
             if (callbackData.equals("antipasti") || callbackData.equals("primi") ||
                     callbackData.equals("secondi") || callbackData.equals("dolci")) {
                 // Mostra la lista dei piatti per la categoria selezionata
-                sendDishList(chatId, messageId, callbackData);
+                sendDishList(chatId, callbackData);
             }
         }
     }
