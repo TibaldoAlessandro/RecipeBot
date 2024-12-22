@@ -10,5 +10,8 @@
     <orderEntry type="library" name="telegram.telegrambots.longpolling" level="project" />
     <orderEntry type="library" name="jsoup" level="project" />
     <orderEntry type="library" name="telegram.telegrambots.client" level="project" />
+    <orderEntry type="library" name="telegram.telegrambots.abilities" level="project" />
+    <orderEntry type="library" name="telegram.telegrambots" level="project" />
+    <orderEntry type="library" name="mysql.connector.j" level="project" />
   </component>
 </module>
