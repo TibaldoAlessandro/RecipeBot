@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="telegram.telegrambots.spring.boot.starter" type="repository">
+    <properties include-transitive-deps="false" maven-id="org.telegram:telegrambots-spring-boot-starter:6.9.7.1" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/telegrambots-spring-boot-starter-6.9.7.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

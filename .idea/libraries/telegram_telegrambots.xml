@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="telegram.telegrambots" type="repository">
-    <properties include-transitive-deps="false" maven-id="org.telegram:telegrambots:6.5.0" />
+    <properties include-transitive-deps="false" maven-id="org.telegram:telegrambots:6.7.0" />
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/telegrambots-6.5.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/telegrambots-6.7.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
